@@ -1,0 +1,46 @@
+import csv
+import requests
+from bs4 import BeautifulSoup
+
+# Function to scrape product information from the website
+def scrape_products(url):
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+    }
+    response = requests.get(url, headers=headers)
+    soup = BeautifulSoup(response.content, 'html.parser')
+    
+    products = []
+
+    # Scraping product information
+    for product in soup.find_all('div', class_='product'):
+        name = product.find('h2', class_='product-name').text.strip()
+        price = product.find('span', class_='price').text.strip()
+        rating = product.find('span', class_='rating').text.strip()
+        
+        products.append({
+            'Name': name,
+            'Price': price,
+            'Rating': rating
+        })
+
+    return products
+
+# Function to write scraped data to a CSV file
+def write_to_csv(products, filename):
+    with open(filename, mode='w', newline='') as file:
+        fieldnames = ['Name', 'Price', 'Rating']
+        writer = csv.DictWriter(file, fieldnames=fieldnames)
+        
+        writer.writeheader()
+        for product in products:
+            writer.writerow(product)
+
+# Main function
+def main():
+    url = 'https://www.example.com/products'  # Replace this URL with the actual e-commerce website URL
+    products = scrape_products(url)
+    write_to_csv(products, 'products.csv')
+
+if __name__ == "__main__":
+    main()
